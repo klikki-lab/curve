@@ -90,7 +90,7 @@ export class SeekBar extends g.E {
         });
     }
 
-    private normarize = (value: number) => value * (this._max - this._min) + this._min;
+    private denormarize = (value: number) => value * (this._max - this._min) + this._min;
 
     private trackProgress = (ex: number): boolean => {
         const knobEntity = this.knob.children[0];
@@ -100,7 +100,7 @@ export class SeekBar extends g.E {
         }
 
         const x = Math.max(0, Math.min(this.width - this.knob.width, ex - this.knob.width / 2));
-        const value = this.normarize(x / (this.width - this.knob.width));
+        const value = this.denormarize(x / (this.width - this.knob.width));
         if (this.value !== value) {
             this.value = value;
             return true;
@@ -142,7 +142,7 @@ export class SeekBar extends g.E {
         }
     };
 
-    get value() { return this.normarize(this._value); }
+    get value() { return this.denormarize(this._value); }
 
     set value(value: number) {
         let relativeValue: number;
