@@ -1,6 +1,15 @@
+import { GameMainParameterObject } from "./../parameterObject";
 import { FontSize } from "./fontSize";
 import { Entity } from "./entity";
 import { SeekBar } from "./seekBar";
+
+interface Snapshot {
+    speed: number,
+    scale: number,
+    objectCount: number,
+    opacity: number,
+    bgOpacity: number,
+}
 
 export class MainScene extends g.Scene {
 
@@ -8,9 +17,35 @@ export class MainScene extends g.Scene {
     private static readonly OBJECT_SIZE = 8 * 4;
 
     private objects: g.E;
+    private speedSeekbar: SeekBar;
+    private scaleSeekbar: SeekBar;
+    private objectCountSeekbar: SeekBar;
+    private opacitySeekbar: SeekBar;
+    private bgOopacitySeekbar: SeekBar;
 
-    constructor() {
+    constructor(param: GameMainParameterObject) {
         super({ game: g.game });
+
+        const snapshot: Snapshot = param.snapshot || {};
+
+        this.setInterval(() => {
+            g.game.raiseEvent(new g.MessageEvent({ type: "SNAPSHOT" }));
+        }, 1000 * 60);
+
+        this.onMessage.add((ev: g.MessageEvent) => {
+            if (ev.data?.type === "SNAPSHOT") {
+                g.game.requestSaveSnapshot(() => {
+                    const snapshot: Snapshot = {
+                        speed: this.speedSeekbar.value,
+                        scale: this.scaleSeekbar.value,
+                        objectCount: this.objectCountSeekbar.value,
+                        opacity: this.opacitySeekbar.value,
+                        bgOpacity: this.bgOopacitySeekbar.value,
+                    };
+                    return { snapshot: snapshot };
+                });
+            }
+        });
 
         this.onLoad.add(_scene => {
             const bg = new g.FilledRect({
@@ -18,7 +53,7 @@ export class MainScene extends g.Scene {
                 width: g.game.width,
                 height: g.game.height,
                 cssColor: "black",
-                opacity: 0,
+                opacity: snapshot.bgOpacity ?? 1,
             });
             this.append(bg);
 
@@ -26,17 +61,17 @@ export class MainScene extends g.Scene {
                 game: g.game,
                 fontFamily: "sans-serif",
                 fontWeight: "bold",
-                strokeWidth: FontSize.TINY / 4,
+                strokeWidth: FontSize.MEDIUM / 4,
                 strokeColor: "black",
                 fontColor: "white",
-                size: FontSize.TINY,
+                size: FontSize.MEDIUM,
             });
 
             const versionLabel = new g.Label({
                 scene: this,
                 text: `Version ${g.game.vars.version}`,
                 font: font,
-                fontSize: 12,
+                fontSize: FontSize.SMALL,
             });
             versionLabel.x = g.game.width - versionLabel.width;
             versionLabel.y = g.game.height - versionLabel.height;
@@ -54,57 +89,57 @@ export class MainScene extends g.Scene {
             });
             this.append(speedLabel);
 
-            const speedSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
-            speedSeekbar.min = 1;
-            speedSeekbar.max = 100;
-            speedSeekbar.value = 1;
-            speedSeekbar.x = speedLabel.x;
-            speedSeekbar.y = speedLabel.y + speedLabel.height + seekBarHeight * 0.5;
-            speedSeekbar.onChenged.add(value => { speed = value; });
-            speed = speedSeekbar.value;
-            this.append(speedSeekbar);
+            this.speedSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
+            this.speedSeekbar.min = 1;
+            this.speedSeekbar.max = 100;
+            this.speedSeekbar.value = snapshot.speed ?? 1;
+            this.speedSeekbar.x = speedLabel.x;
+            this.speedSeekbar.y = speedLabel.y + speedLabel.height + seekBarHeight * 0.5;
+            this.speedSeekbar.onChenged.add(value => { speed = value; });
+            speed = this.speedSeekbar.value;
+            this.append(this.speedSeekbar);
 
-            const sizeLabel = new g.Label({
+            const scaleLabel = new g.Label({
                 scene: this,
                 text: "大きさ",
                 font: font,
                 x: g.game.width - seekBarWidth * 1.5,
-                y: speedSeekbar.y + speedSeekbar.height * 2,
+                y: this.speedSeekbar.y + this.speedSeekbar.height * 2,
             });
-            this.append(sizeLabel);
+            this.append(scaleLabel);
 
-            const sizeSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
-            sizeSeekbar.max = 2;
-            sizeSeekbar.min = 0.05;
-            sizeSeekbar.value = .5;
-            sizeSeekbar.x = sizeLabel.x;
-            sizeSeekbar.y = sizeLabel.y + sizeLabel.height + seekBarHeight * 0.5;
-            sizeSeekbar.onChenged.add(value => {
+            this.scaleSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
+            this.scaleSeekbar.max = 2;
+            this.scaleSeekbar.min = 0.05;
+            this.scaleSeekbar.value = snapshot.scale ?? .05;
+            this.scaleSeekbar.x = scaleLabel.x;
+            this.scaleSeekbar.y = scaleLabel.y + scaleLabel.height + seekBarHeight * 0.5;
+            this.scaleSeekbar.onChenged.add(value => {
                 radius = calcRadius(value);
-                this.objects.children.forEach(e => {
+                this.objects?.children?.forEach(e => {
                     e.scale(value);
                     e.modified();
                 });
             });
-            radius = calcRadius(sizeSeekbar.value);
-            this.append(sizeSeekbar);
+            radius = calcRadius(this.scaleSeekbar.value);
+            this.append(this.scaleSeekbar);
 
             const objectCountLabel = new g.Label({
                 scene: this,
                 text: "オブジェクト数",
                 font: font,
-                x: sizeLabel.x,
-                y: sizeSeekbar.y + sizeSeekbar.height * 2,
+                x: scaleLabel.x,
+                y: this.scaleSeekbar.y + this.scaleSeekbar.height * 2,
             });
             this.append(objectCountLabel);
 
-            const objectCountSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
-            objectCountSeekbar.max = 32;
-            objectCountSeekbar.min = 1;
-            objectCountSeekbar.value = 1;
-            objectCountSeekbar.x = objectCountLabel.x;
-            objectCountSeekbar.y = objectCountLabel.y + objectCountLabel.height + seekBarHeight * 0.5;
-            objectCountSeekbar.onTrackingEnd.add(value => {
+            this.objectCountSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
+            this.objectCountSeekbar.max = 32;
+            this.objectCountSeekbar.min = 1;
+            this.objectCountSeekbar.value = snapshot.objectCount ?? 1;
+            this.objectCountSeekbar.x = objectCountLabel.x;
+            this.objectCountSeekbar.y = objectCountLabel.y + objectCountLabel.height + seekBarHeight * 0.5;
+            this.objectCountSeekbar.onTrackingEnd.add(value => {
                 const count = Math.floor(value * MainScene.MIN_OBJECT_SIZE);
                 if (count === objectCount) return;
 
@@ -114,51 +149,51 @@ export class MainScene extends g.Scene {
                 this.onUpdate.remove(updateHandler);
 
                 objectCount = count;
-                createObjects(objectCount, sizeSeekbar.value, opacitySeekbar.value);
+                createObjects(objectCount, this.scaleSeekbar.value, this.opacitySeekbar.value);
                 this.onUpdate.add(updateHandler);
             });
-            objectCount = Math.floor(objectCountSeekbar.value * MainScene.MIN_OBJECT_SIZE);
-            this.append(objectCountSeekbar);
+            objectCount = Math.floor(this.objectCountSeekbar.value * MainScene.MIN_OBJECT_SIZE);
+            this.append(this.objectCountSeekbar);
 
             const opacityLabel = new g.Label({
                 scene: this,
                 text: "オブジェクト透過率",
                 font: font,
-                x: sizeLabel.x,
-                y: objectCountSeekbar.y + objectCountSeekbar.height * 2,
+                x: scaleLabel.x,
+                y: this.objectCountSeekbar.y + this.objectCountSeekbar.height * 2,
             });
             this.append(opacityLabel);
 
-            const opacitySeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
-            opacitySeekbar.min = 0.05;
-            opacitySeekbar.value = 0.5;
-            opacitySeekbar.x = opacityLabel.x;
-            opacitySeekbar.y = opacityLabel.y + opacityLabel.height + seekBarHeight * 0.5;
-            opacitySeekbar.onChenged.add(value => {
-                this.objects.children.forEach(e => {
+            this.opacitySeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
+            this.opacitySeekbar.min = 0.05;
+            this.opacitySeekbar.value = snapshot.opacity ?? 1;
+            this.opacitySeekbar.x = opacityLabel.x;
+            this.opacitySeekbar.y = opacityLabel.y + opacityLabel.height + seekBarHeight * 0.5;
+            this.opacitySeekbar.onChenged.add(value => {
+                this.objects?.children?.forEach(e => {
                     e.opacity = value;
                     e.modified();
                 });
             });
-            this.append(opacitySeekbar);
+            this.append(this.opacitySeekbar);
 
             const bgOpacityLabel = new g.Label({
                 scene: this,
                 text: "背景透過率",
                 font: font,
-                x: sizeLabel.x,
-                y: opacitySeekbar.y + opacitySeekbar.height * 2,
+                x: scaleLabel.x,
+                y: this.opacitySeekbar.y + this.opacitySeekbar.height * 2,
             });
             this.append(bgOpacityLabel);
 
-            const bgOopacitySeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
-            bgOopacitySeekbar.value = bg.opacity;
-            bgOopacitySeekbar.x = bgOpacityLabel.x;
-            bgOopacitySeekbar.y = bgOpacityLabel.y + bgOpacityLabel.height + seekBarHeight * 0.5;
-            bgOopacitySeekbar.onChenged.add(value => { bg.opacity = value; });
-            this.append(bgOopacitySeekbar);
+            this.bgOopacitySeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
+            this.bgOopacitySeekbar.value = snapshot.bgOpacity ?? bg.opacity;
+            this.bgOopacitySeekbar.x = bgOpacityLabel.x;
+            this.bgOopacitySeekbar.y = bgOpacityLabel.y + bgOpacityLabel.height + seekBarHeight * 0.5;
+            this.bgOopacitySeekbar.onChenged.add(value => { bg.opacity = value; });
+            this.append(this.bgOopacitySeekbar);
 
-            createObjects(objectCount, sizeSeekbar.value, opacitySeekbar.value);
+            createObjects(objectCount, this.scaleSeekbar.value, this.opacitySeekbar.value);
         });
 
         const createObjects = (objectCount: number, objectSize: number, objectOpacity: number) => {
@@ -209,12 +244,12 @@ export class MainScene extends g.Scene {
         };
 
         const generateGradientColor = (value: number, t: number): string => {
-            const time = t * PI2 * 2;
+            const time = t * PI2 * 4;
             const rRate = Math.sin(time);
             const gRate = Math.cos(time);
             const bRate = 1 - Math.sin(time);
-            const base = 64;
-            const offset = 191;
+            const base = 80;
+            const offset = 175;
             const startColor: number[] = [base * rRate + offset, base * gRate + offset, base * bRate + offset];
             const endColor: number[] = [base * bRate + offset, base * gRate + offset, base * rRate + offset];
             const r = Math.round((1 - value) * startColor[0] + value * endColor[0]);

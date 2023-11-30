@@ -94,7 +94,7 @@ export class SeekBar extends g.E {
 
     private trackProgress = (ex: number): boolean => {
         const knobEntity = this.knob.children[0];
-        if (knobEntity instanceof g.FilledRect && knobEntity.cssColor !== SeekBar.COLOR_PRESSED) {
+        if (knobEntity instanceof g.FilledRect && !this.isPressed(knobEntity)) {
             knobEntity.cssColor = SeekBar.COLOR_PRESSED;
             knobEntity.modified();
         }
@@ -107,6 +107,8 @@ export class SeekBar extends g.E {
         }
         return false;
     };
+
+    private isPressed = (knobEntity: g.FilledRect): boolean => knobEntity.cssColor === SeekBar.COLOR_PRESSED;
 
     get min(): number { return this._min; }
 
@@ -123,7 +125,7 @@ export class SeekBar extends g.E {
         if (min > this._value) {
             this.value = min;
         }
-    };
+    }
 
     get max(): number { return this._max; }
 
@@ -140,7 +142,7 @@ export class SeekBar extends g.E {
         if (max < this._value) {
             this.value = max;
         }
-    };
+    }
 
     get value() { return this.denormarize(this._value); }
 
@@ -158,5 +160,5 @@ export class SeekBar extends g.E {
         const x = (this.width - this.knob.width) * this._value;
         this.knob.x = x;
         this.knob.modified();
-    };
+    }
 }

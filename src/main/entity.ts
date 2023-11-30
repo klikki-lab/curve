@@ -8,7 +8,7 @@ export class Entity extends g.FilledRect {
             width: Entity.OBJECT_SIZE,
             height: Entity.OBJECT_SIZE,
             cssColor: "white",
-            opacity: 0.5,
+            opacity: 0,
             anchorX: 0.5,
             anchorY: 0.5,
             x: g.game.width / 2,

@@ -1,6 +1,4 @@
 export const FontSize = {
-    TINY: 20,
-    SMALL: 24,
-    MEDIUM: 28,
-    LARGE: 32,
+    SMALL: 12,
+    MEDIUM: 20,
 } as const;
