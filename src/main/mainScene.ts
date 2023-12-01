@@ -22,6 +22,7 @@ export class MainScene extends g.Scene {
     private objectCountSeekbar: SeekBar;
     private opacitySeekbar: SeekBar;
     private bgOopacitySeekbar: SeekBar;
+    private fpsLabel: g.Label;
 
     constructor(param: GameMainParameterObject) {
         super({ game: g.game });
@@ -73,9 +74,19 @@ export class MainScene extends g.Scene {
                 font: font,
                 fontSize: FontSize.SMALL,
             });
-            versionLabel.x = g.game.width - versionLabel.width;
-            versionLabel.y = g.game.height - versionLabel.height;
+            versionLabel.x = g.game.width - versionLabel.width - FontSize.SMALL * .5;
+            versionLabel.y = g.game.height - versionLabel.height - FontSize.SMALL * .5;
             this.append(versionLabel);
+
+            this.fpsLabel = new g.Label({
+                scene: this,
+                text: `FPS ${g.game.fps}`,
+                font: font,
+                fontSize: FontSize.SMALL,
+            });
+            this.fpsLabel.x = versionLabel.x - this.fpsLabel.width - FontSize.SMALL * 4;
+            this.fpsLabel.y = versionLabel.y;
+            this.append(this.fpsLabel);
 
             const seekBarWidth = 160;
             const seekBarHeight = 32;
@@ -236,6 +247,20 @@ export class MainScene extends g.Scene {
         };
 
         this.onUpdate.add(_ => updateHandler());
+
+        let frames = 0;
+        let last = Date.now();
+        this.onUpdate.add(_ => {
+            frames++;
+            const elapsed = Date.now() - last;
+            if (elapsed >= 1000) {
+                const fps = (frames / elapsed) * 1000;
+                this.fpsLabel.text = `FPS ${fps.toFixed(2)}`;
+                this.fpsLabel.invalidate();
+                frames = 0;
+                last = Date.now();
+            }
+        });
 
         const calcRadius = (value: number): number => {
             const k = 100000;
