@@ -6,7 +6,7 @@ import { SeekBar } from "./seekBar";
 interface Snapshot {
     speed: number,
     scale: number,
-    objectCount: number,
+    // objectCount: number,
     opacity: number,
     bgOpacity: number,
 }
@@ -19,7 +19,7 @@ export class MainScene extends g.Scene {
     private objects: g.E;
     private speedSeekbar: SeekBar;
     private scaleSeekbar: SeekBar;
-    private objectCountSeekbar: SeekBar;
+    // private objectCountSeekbar: SeekBar;
     private opacitySeekbar: SeekBar;
     private bgOopacitySeekbar: SeekBar;
     private fpsLabel: g.Label;
@@ -39,7 +39,7 @@ export class MainScene extends g.Scene {
                     const snapshot: Snapshot = {
                         speed: this.speedSeekbar.value,
                         scale: this.scaleSeekbar.value,
-                        objectCount: this.objectCountSeekbar.value,
+                        // objectCount: this.objectCountSeekbar.value,
                         opacity: this.opacitySeekbar.value,
                         bgOpacity: this.bgOopacitySeekbar.value,
                     };
@@ -96,7 +96,7 @@ export class MainScene extends g.Scene {
                 text: "速さ",
                 font: font,
                 x: g.game.width - seekBarWidth * 1.5,
-                y: seekBarHeight * 3,
+                y: seekBarHeight * 4,
             });
             this.append(speedLabel);
 
@@ -135,41 +135,42 @@ export class MainScene extends g.Scene {
             radius = calcRadius(this.scaleSeekbar.value);
             this.append(this.scaleSeekbar);
 
-            const objectCountLabel = new g.Label({
-                scene: this,
-                text: "オブジェクト数",
-                font: font,
-                x: scaleLabel.x,
-                y: this.scaleSeekbar.y + this.scaleSeekbar.height * 2,
-            });
-            this.append(objectCountLabel);
+            // ver 0.3.2で削除
+            // const objectCountLabel = new g.Label({
+            //     scene: this,
+            //     text: "オブジェクト数",
+            //     font: font,
+            //     x: scaleLabel.x,
+            //     y: this.scaleSeekbar.y + this.scaleSeekbar.height * 2,
+            // });
+            // this.append(objectCountLabel);
 
-            this.objectCountSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
-            this.objectCountSeekbar.max = 32;
-            this.objectCountSeekbar.min = 1;
-            this.objectCountSeekbar.value = snapshot.objectCount ?? 1;
-            this.objectCountSeekbar.x = objectCountLabel.x;
-            this.objectCountSeekbar.y = objectCountLabel.y + objectCountLabel.height + seekBarHeight * 0.5;
-            this.objectCountSeekbar.onTrackingEnd.add(value => {
-                const count = Math.floor(value * MainScene.MIN_OBJECT_SIZE);
-                if (count === objectCount) return;
+            // this.objectCountSeekbar = new SeekBar(this, seekBarWidth, seekBarHeight);
+            // this.objectCountSeekbar.max = 32;
+            // this.objectCountSeekbar.min = 1;
+            // this.objectCountSeekbar.value = snapshot.objectCount ?? 1;
+            // this.objectCountSeekbar.x = objectCountLabel.x;
+            // this.objectCountSeekbar.y = objectCountLabel.y + objectCountLabel.height + seekBarHeight * 0.5;
+            // this.objectCountSeekbar.onTrackingEnd.add(value => {
+            //     const count = Math.floor(value * MainScene.MIN_OBJECT_SIZE);
+            //     if (count === objectCount) return;
 
-                this.objects?.destroy();
-                this.onUpdate.remove(updateHandler);
+            //     this.objects?.destroy();
+            //     this.onUpdate.remove(updateHandler);
 
-                objectCount = count;
-                createObjects(objectCount, this.scaleSeekbar.value, this.opacitySeekbar.value);
-                this.onUpdate.add(updateHandler);
-            });
-            objectCount = Math.floor(this.objectCountSeekbar.value * MainScene.MIN_OBJECT_SIZE);
-            this.append(this.objectCountSeekbar);
+            //     objectCount = count;
+            //     createObjects(objectCount, this.scaleSeekbar.value, this.opacitySeekbar.value);
+            //     this.onUpdate.add(updateHandler);
+            // });
+            // objectCount = Math.floor(this.objectCountSeekbar.value * MainScene.MIN_OBJECT_SIZE);
+            // this.append(this.objectCountSeekbar);
 
             const opacityLabel = new g.Label({
                 scene: this,
                 text: "オブジェクト透過率",
                 font: font,
                 x: scaleLabel.x,
-                y: this.objectCountSeekbar.y + this.objectCountSeekbar.height * 2,
+                y: this.scaleSeekbar.y + this.scaleSeekbar.height * 2,
             });
             this.append(opacityLabel);
 
@@ -202,13 +203,13 @@ export class MainScene extends g.Scene {
             this.bgOopacitySeekbar.onChanged.add(value => { bg.opacity = value; });
             this.append(this.bgOopacitySeekbar);
 
+            objectCount = Math.floor(32 * MainScene.MIN_OBJECT_SIZE);
+            this.objects = new g.E({ scene: this });
+            this.append(this.objects);
             createObjects(objectCount, this.scaleSeekbar.value, this.opacitySeekbar.value);
         });
 
         const createObjects = (objectCount: number, objectSize: number, objectOpacity: number) => {
-            this.objects = new g.E({ scene: this });
-            this.append(this.objects);
-
             for (let i = 0; i < objectCount; i++) {
                 const entity = new Entity(this);
                 entity.scale(objectSize);
@@ -229,6 +230,8 @@ export class MainScene extends g.Scene {
             t = Math.sin(g.game.age / (g.game.fps * (1000 / speed)));
             const length = this.objects?.children?.length ?? 0;
             this.objects?.children?.forEach((e, i) => {
+                if (!e) return;
+
                 const r = Math.cos(PI2 * t * i);
                 const x = Math.sin(i / length * PI2) * r * radius;
                 const y = Math.cos(i / length * PI2) * r * radius;
@@ -237,7 +240,9 @@ export class MainScene extends g.Scene {
                 e.angle += (60 / g.game.fps) * 30;
                 e.angle %= 360;
                 const rate = Math.max(Math.abs(x), Math.abs(y)) / centerY;
-                (e as Entity).cssColor = `${generateGradientColor(rate, t)}`;
+                if (e instanceof Entity) {
+                    e.cssColor = `${generateGradientColor(rate, t)}`;
+                }
                 e.modified();
             });
         };
