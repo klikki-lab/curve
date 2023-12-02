@@ -80,7 +80,7 @@ export class MainScene extends g.Scene {
 
             this.fpsLabel = new g.Label({
                 scene: this,
-                text: `FPS ${g.game.fps}`,
+                text: `FPS ${g.game.fps.toFixed(2)}`,
                 font: font,
                 fontSize: FontSize.SMALL,
             });
@@ -154,9 +154,7 @@ export class MainScene extends g.Scene {
                 const count = Math.floor(value * MainScene.MIN_OBJECT_SIZE);
                 if (count === objectCount) return;
 
-                if (this.objects) {
-                    this.objects.destroy();
-                }
+                this.objects?.destroy();
                 this.onUpdate.remove(updateHandler);
 
                 objectCount = count;
@@ -229,17 +227,15 @@ export class MainScene extends g.Scene {
 
         const updateHandler = () => {
             t = Math.sin(g.game.age / (g.game.fps * (1000 / speed)));
-            const length = this.objects.children.length;
-            this.objects.children.forEach((e, i) => {
+            const length = this.objects?.children?.length ?? 0;
+            this.objects?.children?.forEach((e, i) => {
                 const r = Math.cos(PI2 * t * i);
                 const x = Math.sin(i / length * PI2) * r * radius;
                 const y = Math.cos(i / length * PI2) * r * radius;
                 e.x = centerX + x;
                 e.y = centerY + y;
                 e.angle += (60 / g.game.fps) * 30;
-                if (e.angle >= 360) {
-                    e.angle = 0;
-                }
+                e.angle %= 360;
                 const rate = Math.max(Math.abs(x), Math.abs(y)) / centerY;
                 (e as Entity).cssColor = `${generateGradientColor(rate, t)}`;
                 e.modified();
@@ -253,8 +249,8 @@ export class MainScene extends g.Scene {
         this.onUpdate.add(_ => {
             frames++;
             const elapsed = Date.now() - last;
-            if (elapsed >= 1000) {
-                const fps = (frames / elapsed) * 1000;
+            if (frames >= g.game.fps && elapsed >= 1000) {
+                const fps = (g.game.fps / elapsed) * 1000;
                 this.fpsLabel.text = `FPS ${fps.toFixed(2)}`;
                 this.fpsLabel.invalidate();
                 frames = 0;

@@ -21,6 +21,7 @@ export class SeekBar extends g.E {
     private _min: number = 0;
     private _max: number = 1;
     private _value: number = 0;
+    private firstTouchPlayerId: string = undefined;
 
     constructor(scene: g.Scene, width: number, height: number) {
         super({
@@ -55,18 +56,21 @@ export class SeekBar extends g.E {
             height: height,
             cssColor: SeekBar.COLOR_BORDER,
         });
-        const knobEntity = new g.FilledRect({
+        new g.FilledRect({
             scene: scene,
             width: this.knob.width - SeekBar.STROKE_WIDTH * 2,
             height: this.knob.height - SeekBar.STROKE_WIDTH * 2,
             cssColor: SeekBar.COLOR_NORMAL,
             x: SeekBar.STROKE_WIDTH,
             y: SeekBar.STROKE_WIDTH,
+            parent: this.knob,
         });
-        this.knob.append(knobEntity);
         this.append(this.knob);
 
         this.onPointDown.add(ev => {
+            if (this.firstTouchPlayerId) return;
+
+            this.firstTouchPlayerId = ev.player.id;
             const ex = ev.point.x;
             if (this.trackProgress(ex)) {
                 this.onChenged.fire(this.value);
@@ -74,13 +78,18 @@ export class SeekBar extends g.E {
         });
 
         this.onPointMove.add(ev => {
+            if (this.firstTouchPlayerId !== ev.player.id) return;
+
             const ex = ev.startDelta.x + ev.point.x;
             if (this.trackProgress(ex)) {
                 this.onChenged.fire(this.value);
             }
         });
 
-        this.onPointUp.add(_ev => {
+        this.onPointUp.add(ev => {
+            if (this.firstTouchPlayerId !== ev.player.id) return;
+
+            this.firstTouchPlayerId = undefined;
             const knobEntity = this.knob.children[0];
             if (knobEntity instanceof g.FilledRect) {
                 knobEntity.cssColor = SeekBar.COLOR_NORMAL;
