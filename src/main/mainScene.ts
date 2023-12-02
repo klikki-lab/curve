@@ -106,7 +106,7 @@ export class MainScene extends g.Scene {
             this.speedSeekbar.value = snapshot.speed ?? 1;
             this.speedSeekbar.x = speedLabel.x;
             this.speedSeekbar.y = speedLabel.y + speedLabel.height + seekBarHeight * 0.5;
-            this.speedSeekbar.onChenged.add(value => { speed = value; });
+            this.speedSeekbar.onChanged.add(value => { speed = value; });
             speed = this.speedSeekbar.value;
             this.append(this.speedSeekbar);
 
@@ -125,7 +125,7 @@ export class MainScene extends g.Scene {
             this.scaleSeekbar.value = snapshot.scale ?? .05;
             this.scaleSeekbar.x = scaleLabel.x;
             this.scaleSeekbar.y = scaleLabel.y + scaleLabel.height + seekBarHeight * 0.5;
-            this.scaleSeekbar.onChenged.add(value => {
+            this.scaleSeekbar.onChanged.add(value => {
                 radius = calcRadius(value);
                 this.objects?.children?.forEach(e => {
                     e.scale(value);
@@ -178,7 +178,7 @@ export class MainScene extends g.Scene {
             this.opacitySeekbar.value = snapshot.opacity ?? 1;
             this.opacitySeekbar.x = opacityLabel.x;
             this.opacitySeekbar.y = opacityLabel.y + opacityLabel.height + seekBarHeight * 0.5;
-            this.opacitySeekbar.onChenged.add(value => {
+            this.opacitySeekbar.onChanged.add(value => {
                 this.objects?.children?.forEach(e => {
                     e.opacity = value;
                     e.modified();
@@ -199,7 +199,7 @@ export class MainScene extends g.Scene {
             this.bgOopacitySeekbar.value = snapshot.bgOpacity ?? bg.opacity;
             this.bgOopacitySeekbar.x = bgOpacityLabel.x;
             this.bgOopacitySeekbar.y = bgOpacityLabel.y + bgOpacityLabel.height + seekBarHeight * 0.5;
-            this.bgOopacitySeekbar.onChenged.add(value => { bg.opacity = value; });
+            this.bgOopacitySeekbar.onChanged.add(value => { bg.opacity = value; });
             this.append(this.bgOopacitySeekbar);
 
             createObjects(objectCount, this.scaleSeekbar.value, this.opacitySeekbar.value);

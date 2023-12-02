@@ -10,7 +10,7 @@ export class SeekBar extends g.E {
      * 値の変更イベント。シークバーが操作された時の値を渡す。
      * 最大値と最小値がデフォルト値のままであれば 0.0 - 1.0、設定していればそれらを考慮した実数を受け取る。
      */
-    onChenged: g.Trigger<number> = new g.Trigger();
+    onChanged: g.Trigger<number> = new g.Trigger();
 
     /**
      * シークバーのトラッキング操作終了イベント。
@@ -73,7 +73,7 @@ export class SeekBar extends g.E {
             this.firstTouchPlayerId = ev.player.id;
             const ex = ev.point.x;
             if (this.trackProgress(ex)) {
-                this.onChenged.fire(this.value);
+                this.onChanged.fire(this.value);
             }
         });
 
@@ -82,7 +82,7 @@ export class SeekBar extends g.E {
 
             const ex = ev.startDelta.x + ev.point.x;
             if (this.trackProgress(ex)) {
-                this.onChenged.fire(this.value);
+                this.onChanged.fire(this.value);
             }
         });
 
