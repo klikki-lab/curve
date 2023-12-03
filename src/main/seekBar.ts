@@ -31,41 +31,47 @@ export class SeekBar extends g.E {
             touchable: true,
         });
 
-        const bgBorder = new g.FilledRect({
-            scene: scene,
-            width: width - height,
-            height: SeekBar.BACKGROUND_HEIGHT,
-            cssColor: SeekBar.COLOR_NORMAL,
-            x: height / 2,
-            y: (height - SeekBar.BACKGROUND_HEIGHT) / 2,
-        });
-        new g.FilledRect({
-            scene: scene,
-            width: bgBorder.width - SeekBar.STROKE_WIDTH * 2,
-            height: bgBorder.height - SeekBar.STROKE_WIDTH * 2,
-            cssColor: SeekBar.COLOR_BORDER,
-            x: SeekBar.STROKE_WIDTH,
-            y: SeekBar.STROKE_WIDTH,
-            parent: bgBorder,
-        });
-        this.append(bgBorder);
+        const createBackgroundBar = (): g.FilledRect => {
+            const backgroundBar = new g.FilledRect({
+                scene: scene,
+                width: width - height,
+                height: SeekBar.BACKGROUND_HEIGHT,
+                cssColor: SeekBar.COLOR_NORMAL,
+                x: height / 2,
+                y: (height - SeekBar.BACKGROUND_HEIGHT) / 2,
+            });
+            new g.FilledRect({
+                scene: scene,
+                width: backgroundBar.width - SeekBar.STROKE_WIDTH * 2,
+                height: backgroundBar.height - SeekBar.STROKE_WIDTH * 2,
+                cssColor: SeekBar.COLOR_BORDER,
+                x: SeekBar.STROKE_WIDTH,
+                y: SeekBar.STROKE_WIDTH,
+                parent: backgroundBar,
+            });
+            return backgroundBar;
+        };
+        this.append(createBackgroundBar());
 
-        this.knob = new g.FilledRect({
-            scene: scene,
-            width: height,
-            height: height,
-            cssColor: SeekBar.COLOR_BORDER,
-        });
-        new g.FilledRect({
-            scene: scene,
-            width: this.knob.width - SeekBar.STROKE_WIDTH * 2,
-            height: this.knob.height - SeekBar.STROKE_WIDTH * 2,
-            cssColor: SeekBar.COLOR_NORMAL,
-            x: SeekBar.STROKE_WIDTH,
-            y: SeekBar.STROKE_WIDTH,
-            parent: this.knob,
-        });
-        this.append(this.knob);
+        const createKnob = (): g.FilledRect => {
+            const knob = new g.FilledRect({
+                scene: scene,
+                width: height,
+                height: height,
+                cssColor: SeekBar.COLOR_BORDER,
+            });
+            new g.FilledRect({
+                scene: scene,
+                width: knob.width - SeekBar.STROKE_WIDTH * 2,
+                height: knob.height - SeekBar.STROKE_WIDTH * 2,
+                cssColor: SeekBar.COLOR_NORMAL,
+                x: SeekBar.STROKE_WIDTH,
+                y: SeekBar.STROKE_WIDTH,
+                parent: knob,
+            });
+            return knob;
+        };
+        this.append(this.knob = createKnob());
 
         this.onPointDown.add(ev => {
             if (this.firstTouchPlayerId) return;
@@ -90,22 +96,24 @@ export class SeekBar extends g.E {
             if (this.firstTouchPlayerId !== ev.player.id) return;
 
             this.firstTouchPlayerId = undefined;
-            const knobEntity = this.knob.children[0];
-            if (knobEntity instanceof g.FilledRect) {
-                knobEntity.cssColor = SeekBar.COLOR_NORMAL;
-                knobEntity.modified();
+            const knob = this.knob.children[0];
+            if (knob instanceof g.FilledRect) {
+                knob.cssColor = SeekBar.COLOR_NORMAL;
+                knob.modified();
             }
             this.onTrackingEnd.fire(this.value);
         });
     }
 
-    private denormarize = (value: number) => value * (this._max - this._min) + this._min;
-
+    /**
+     * @param ex タッチした X 座標
+     * @returns 値に変更があれば true、そうでなければ false
+     */
     private trackProgress = (ex: number): boolean => {
-        const knobEntity = this.knob.children[0];
-        if (knobEntity instanceof g.FilledRect && !this.isPressed(knobEntity)) {
-            knobEntity.cssColor = SeekBar.COLOR_PRESSED;
-            knobEntity.modified();
+        const knob = this.knob.children[0];
+        if (knob instanceof g.FilledRect && !this.isPressed(knob)) {
+            knob.cssColor = SeekBar.COLOR_PRESSED;
+            knob.modified();
         }
 
         const x = Math.max(0, Math.min(this.width - this.knob.width, ex - this.knob.width / 2));
@@ -116,6 +124,12 @@ export class SeekBar extends g.E {
         }
         return false;
     };
+
+    /**
+     * @param value 値
+     * @returns min と max を考慮した値
+     */
+    private denormarize = (value: number) => value * (this._max - this._min) + this._min;
 
     private isPressed = (knobEntity: g.FilledRect): boolean => knobEntity.cssColor === SeekBar.COLOR_PRESSED;
 
