@@ -18,6 +18,8 @@
 #### バージョン 0.3.3
   - オブジェクト数変更を復活
   - その他、軽微な修正
+#### バージョン 0.3.4
+  - FPSの修正
 ## オープンソースライセンス
  Akashic Engine  
  https://akashic-games.github.io/  

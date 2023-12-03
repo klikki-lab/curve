@@ -84,6 +84,7 @@ export class MainScene extends g.Scene {
                 text: `FPS ${g.game.fps.toFixed(2)}`,
                 font: font,
                 fontSize: FontSize.SMALL,
+                local: true,
             });
             this.fpsLabel.x = versionLabel.x - this.fpsLabel.width - FontSize.SMALL * 4;
             this.fpsLabel.y = versionLabel.y;
