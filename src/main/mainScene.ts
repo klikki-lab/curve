@@ -35,6 +35,8 @@ export class MainScene extends g.Scene {
         }, 1000 * 60);
 
         this.onMessage.add((ev: g.MessageEvent) => {
+            if (0x02 !== ev.eventFlags) return;
+
             if (ev.data?.type === "SNAPSHOT") {
                 g.game.requestSaveSnapshot(() => {
                     const snapshot: Snapshot = {

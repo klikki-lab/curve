@@ -20,6 +20,8 @@
   - その他、軽微な修正
 #### バージョン 0.3.4
   - FPSの修正
+#### バージョン 0.3.5
+  - スナップショットの修正
 ## オープンソースライセンス
  Akashic Engine  
  https://akashic-games.github.io/  
