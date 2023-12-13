@@ -26,19 +26,19 @@ export class SeekBar extends g.E {
     constructor(scene: g.Scene, width: number, height: number) {
         super({
             scene: scene,
-            width: width,
-            height: height,
+            width: Math.max(width, SeekBar.BACKGROUND_HEIGHT * 4),
+            height: Math.max(height, SeekBar.BACKGROUND_HEIGHT * 2),
             touchable: true,
         });
 
         const createBackgroundBar = (): g.FilledRect => {
             const backgroundBar = new g.FilledRect({
                 scene: scene,
-                width: width - height,
+                width: this.width - this.height,
                 height: SeekBar.BACKGROUND_HEIGHT,
                 cssColor: SeekBar.COLOR_NORMAL,
-                x: height / 2,
-                y: (height - SeekBar.BACKGROUND_HEIGHT) / 2,
+                x: this.height / 2,
+                y: (this.height - SeekBar.BACKGROUND_HEIGHT) / 2,
             });
             new g.FilledRect({
                 scene: scene,
@@ -56,8 +56,8 @@ export class SeekBar extends g.E {
         const createKnob = (): g.FilledRect => {
             const knob = new g.FilledRect({
                 scene: scene,
-                width: height,
-                height: height,
+                width: this.height,
+                height: this.height,
                 cssColor: SeekBar.COLOR_BORDER,
             });
             new g.FilledRect({

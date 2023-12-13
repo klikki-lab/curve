@@ -99,7 +99,7 @@ export class MainScene extends g.Scene {
                 scene: this,
                 text: "速さ",
                 font: font,
-                x: g.game.width - seekBarWidth * 1.5,
+                x: g.game.width - seekBarWidth * 1.25,
                 y: seekBarHeight * 4,
             });
             this.append(speedLabel);
@@ -118,7 +118,7 @@ export class MainScene extends g.Scene {
                 scene: this,
                 text: "大きさ",
                 font: font,
-                x: g.game.width - seekBarWidth * 1.5,
+                x: speedLabel.x,
                 y: this.speedSeekbar.y + this.speedSeekbar.height * 2,
             });
             this.append(scaleLabel);
