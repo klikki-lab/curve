@@ -18,18 +18,26 @@ export class SeekBar extends g.E {
     onTrackingEnd: g.Trigger<number> = new g.Trigger();
 
     private knob: g.FilledRect;
-    private _min: number = 0;
-    private _max: number = 1;
-    private _value: number = 0;
     private firstTouchPlayerId: string = undefined;
 
-    constructor(scene: g.Scene, width: number, height: number) {
+    constructor(
+        scene: g.Scene,
+        width: number,
+        height: number,
+        private _value: number = 0,
+        private _min: number = 0,
+        private _max: number = 1) {
+
         super({
             scene: scene,
             width: Math.max(width, SeekBar.BACKGROUND_HEIGHT * 4),
             height: Math.max(height, SeekBar.BACKGROUND_HEIGHT * 2),
             touchable: true,
         });
+
+        if (_min >= _max) {
+            throw new RangeError(`max=${_max} が min=${_min} より小さい`);
+        }
 
         const createBackgroundBar = (): g.FilledRect => {
             const backgroundBar = new g.FilledRect({
